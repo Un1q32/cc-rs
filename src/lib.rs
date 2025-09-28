@@ -2568,9 +2568,10 @@ impl Build {
             }
         } else {
             match arch_str {
-                "arm" | "armv7" | "thumbv7" => AppleArchSpec::Device("armv7"),
+                "armv7" | "thumbv7" => AppleArchSpec::Device("armv7"),
                 "armv7k" => AppleArchSpec::Device("armv7k"),
                 "armv7s" | "thumbv7s" => AppleArchSpec::Device("armv7s"),
+                "arm" | "armv6" | "thumbv6" => AppleArchSpec::Device("armv6"),
                 "arm64e" => AppleArchSpec::Device("arm64e"),
                 "arm64" | "aarch64" => AppleArchSpec::Device("arm64"),
                 "arm64_32" => AppleArchSpec::Device("arm64_32"),
@@ -3649,36 +3650,6 @@ impl Build {
                 .split('.')
                 .map(|v| v.parse::<u32>().expect("integer version"));
 
-            match os {
-                AppleOs::MacOs => {
-                    let major = deployment_target.next().unwrap_or(0);
-                    let minor = deployment_target.next().unwrap_or(0);
-
-                    // If below 10.9, we ignore it and let the SDK's target definitions handle it.
-                    if major == 10 && minor < 9 {
-                        self.cargo_output.print_warning(&format_args!(
-                            "macOS deployment target ({}) too low, it will be increased",
-                            deployment_target_ver
-                        ));
-                        return None;
-                    }
-                }
-                AppleOs::Ios => {
-                    let major = deployment_target.next().unwrap_or(0);
-
-                    // If below 10.7, we ignore it and let the SDK's target definitions handle it.
-                    if major < 7 {
-                        self.cargo_output.print_warning(&format_args!(
-                            "iOS deployment target ({}) too low, it will be increased",
-                            deployment_target_ver
-                        ));
-                        return None;
-                    }
-                }
-                // watchOS, tvOS, and others are all new enough that libc++ is their baseline.
-                _ => {}
-            }
-
             // If the deployment target met or exceeded the C++ baseline
             Some(deployment_target_ver)
         };
@@ -3702,7 +3673,7 @@ impl Build {
                     if arch_str == Some("aarch64") {
                         "11.0".into()
                     } else {
-                        let default = "10.7";
+                        let default = "10.5";
                         maybe_cpp_version_baseline(default.into()).unwrap_or_else(|| default.into())
                     }
                 }),
@@ -3710,11 +3681,11 @@ impl Build {
             AppleOs::Ios => deployment_from_env("IPHONEOS_DEPLOYMENT_TARGET")
                 .and_then(maybe_cpp_version_baseline)
                 .or_else(default_deployment_from_sdk)
-                .unwrap_or_else(|| "7.0".into()),
+                .unwrap_or_else(|| "2.0".into()),
 
             AppleOs::WatchOs => deployment_from_env("WATCHOS_DEPLOYMENT_TARGET")
                 .or_else(default_deployment_from_sdk)
-                .unwrap_or_else(|| "5.0".into()),
+                .unwrap_or_else(|| "2.0".into()),
 
             AppleOs::TvOs => deployment_from_env("TVOS_DEPLOYMENT_TARGET")
                 .or_else(default_deployment_from_sdk)
