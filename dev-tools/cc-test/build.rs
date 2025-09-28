@@ -54,6 +54,8 @@ fn main() {
         "arm64_32" => "aarch64",
         "armv7k" => "armv7",
         "armv7s" => "armv7",
+        "armv7" => "armv7",
+        "armv6" => "armv6",
         "i386" => "i686",
         "x86_64h" => "x86_64",
         arch => arch,

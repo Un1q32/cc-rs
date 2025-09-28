@@ -3982,34 +3982,6 @@ impl Build {
                 .split('.')
                 .map(|v| v.parse::<u32>().expect("integer version"));
 
-            match target.os {
-                "macos" => {
-                    let major = deployment_target.next().unwrap_or(0);
-                    let minor = deployment_target.next().unwrap_or(0);
-
-                    // If below 10.9, we ignore it and let the SDK's target definitions handle it.
-                    if major == 10 && minor < 9 {
-                        self.cargo_output.print_warning(&format_args!(
-                            "macOS deployment target ({deployment_target_ver}) too low, it will be increased"
-                        ));
-                        return None;
-                    }
-                }
-                "ios" => {
-                    let major = deployment_target.next().unwrap_or(0);
-
-                    // If below 10.7, we ignore it and let the SDK's target definitions handle it.
-                    if major < 7 {
-                        self.cargo_output.print_warning(&format_args!(
-                            "iOS deployment target ({deployment_target_ver}) too low, it will be increased"
-                        ));
-                        return None;
-                    }
-                }
-                // watchOS, tvOS, visionOS, and others are all new enough that libc++ is their baseline.
-                _ => {}
-            }
-
             // If the deployment target met or exceeded the C++ baseline
             Some(deployment_target_ver)
         };
@@ -4033,7 +4005,7 @@ impl Build {
                     if target.arch == "aarch64" {
                         "11.0".into()
                     } else {
-                        let default: Arc<str> = Arc::from("10.7");
+                        let default: Arc<str> = Arc::from("10.5");
                         maybe_cpp_version_baseline(default.clone()).unwrap_or(default)
                     }
                 }),
@@ -4041,11 +4013,11 @@ impl Build {
             "ios" => deployment_from_env("IPHONEOS_DEPLOYMENT_TARGET")
                 .and_then(maybe_cpp_version_baseline)
                 .or_else(default_deployment_from_sdk)
-                .unwrap_or_else(|| "7.0".into()),
+                .unwrap_or_else(|| "2.0".into()),
 
             "watchos" => deployment_from_env("WATCHOS_DEPLOYMENT_TARGET")
                 .or_else(default_deployment_from_sdk)
-                .unwrap_or_else(|| "5.0".into()),
+                .unwrap_or_else(|| "2.0".into()),
 
             "tvos" => deployment_from_env("TVOS_DEPLOYMENT_TARGET")
                 .or_else(default_deployment_from_sdk)
@@ -4285,6 +4257,8 @@ fn map_darwin_target_from_rust_to_compiler_architecture<'a>(target: &TargetInfo<
         "arm64e" => "arm64e",
         "armv7k" => "armv7k",
         "armv7s" => "armv7s",
+        "armv7" => "armv7",
+        "armv6" => "armv6",
         "i386" => "i386",
         "i686" => "i386",
         "powerpc" => "ppc",
