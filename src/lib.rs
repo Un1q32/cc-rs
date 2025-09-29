@@ -2428,9 +2428,10 @@ impl Build {
             }
         } else {
             match arch {
-                "arm" | "armv7" | "thumbv7" => ArchSpec::Device("armv7"),
+                "armv7" | "thumbv7" => ArchSpec::Device("armv7"),
                 "armv7k" => ArchSpec::Device("armv7k"),
                 "armv7s" | "thumbv7s" => ArchSpec::Device("armv7s"),
+                "arm" | "armv6" | "thumbv6" => ArchSpec::Device("armv6"),
                 "arm64e" => ArchSpec::Device("arm64e"),
                 "arm64" | "aarch64" => ArchSpec::Device("arm64"),
                 "arm64_32" => ArchSpec::Device("arm64_32"),
@@ -2449,7 +2450,7 @@ impl Build {
             Os::Ios => (
                 "iphone",
                 "ios-",
-                std::env::var("IPHONEOS_DEPLOYMENT_TARGET").unwrap_or_else(|_| "7.0".into()),
+                std::env::var("IPHONEOS_DEPLOYMENT_TARGET").unwrap_or_else(|_| "2.0".into()),
             ),
             Os::WatchOs => (
                 "watch",
